@@ -1,0 +1,2496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FraudGuard | Intelligent Fraud Detection</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <style>
+        :root {
+            --navy: #101a35;
+            --pink: #ff619b;
+            --purple: #8654ff;
+            --blue: #4285f4;
+            --text: #192441;
+            --muted: #65708d;
+            --white: #ffffff;
+            --border: rgba(150, 144, 190, 0.20);
+            --glass: rgba(255, 255, 255, 0.92);
+            --shadow: 0 20px 65px rgba(20, 22, 62, 0.16);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* CUSTOM CURSORS */
+        body {
+            font-family: "DM Sans", sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            background: #101a35;
+            /* Custom Pink Cursor */
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="%23ff619b" stroke="%23ffffff" stroke-width="1.5" d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.8c.45 0 .67-.54.35-.85L5.85 2.86c-.31-.31-.85-.09-.85.35z"/></svg>'), auto;
+        }
+
+        button,
+        input,
+        select,
+        a,
+        .nav-links a,
+        .analyze-button {
+            font: inherit;
+            /* Custom Purple Pointer Cursor */
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="%238654ff" stroke="%23ffffff" stroke-width="1.5" d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.8c.45 0 .67-.54.35-.85L5.85 2.86c-.31-.31-.85-.09-.85.35z"/></svg>'), pointer !important;
+        }
+
+        button {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* FLOATING ANIMATIONS */
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes floating-rotate {
+            0% { transform: translateY(0px) rotate(1deg); }
+            50% { transform: translateY(-8px) rotate(2.5deg); }
+            100% { transform: translateY(0px) rotate(1deg); }
+        }
+
+        /* BACKGROUND */
+
+        .page-background {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            overflow: hidden;
+            background:
+                radial-gradient(
+                    ellipse at 80% 15%,
+                    rgba(255, 109, 169, 0.40),
+                    transparent 35%
+                ),
+                radial-gradient(
+                    ellipse at 15% 65%,
+                    rgba(118, 89, 255, 0.36),
+                    transparent 40%
+                ),
+                linear-gradient(
+                    135deg,
+                    #101a35 0%,
+                    #28365b 45%,
+                    #493c6c 75%,
+                    #e58da9 120%
+                );
+        }
+
+        .page-background::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(
+                    circle at 20% 20%,
+                    rgba(255, 255, 255, 0.10) 1px,
+                    transparent 2px
+                );
+            background-size: 45px 45px;
+            opacity: 0.35;
+        }
+
+        .page-background::after {
+            content: "";
+            position: absolute;
+            width: 650px;
+            height: 650px;
+            right: -200px;
+            top: -280px;
+            border-radius: 50%;
+            background: rgba(255, 116, 180, 0.17);
+            filter: blur(70px);
+        }
+
+        .ambient {
+            position: fixed;
+            z-index: -1;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            filter: blur(100px);
+            pointer-events: none;
+        }
+
+        .ambient-one {
+            background: rgba(129, 88, 255, 0.24);
+            left: -150px;
+            bottom: 0;
+            animation: floating 8s ease-in-out infinite reverse;
+        }
+
+        .ambient-two {
+            background: rgba(255, 96, 158, 0.22);
+            right: -130px;
+            bottom: 5%;
+            animation: floating 7s ease-in-out infinite;
+        }
+
+        /* NAVIGATION */
+
+        .navbar {
+            width: min(1500px, 95%);
+            margin: auto;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 25px;
+            color: white;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            flex-shrink: 0;
+        }
+
+        .brand-icon {
+            width: 54px;
+            height: 60px;
+            display: grid;
+            place-items: center;
+            color: white;
+            font-size: 32px;
+            font-weight: 800;
+            border: 3px solid #ff80b5;
+            border-radius: 18px 18px 23px 23px;
+            transform: rotate(0deg);
+            box-shadow:
+                0 0 24px rgba(255, 94, 169, 0.26),
+                inset 0 0 20px rgba(255, 255, 255, 0.08);
+            animation: floating 4s ease-in-out infinite;
+        }
+
+        .brand-name {
+            font-family: "Plus Jakarta Sans", sans-serif;
+            font-size: 29px;
+            font-weight: 800;
+            letter-spacing: -1.1px;
+        }
+
+        .brand-name span {
+            color: #ff82b9;
+        }
+
+        .brand-subtitle {
+            font-size: 12px;
+            color: #d0d8ee;
+            margin-top: 4px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 7px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.09);
+            backdrop-filter: blur(20px);
+            border-radius: 50px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #e8eaf8;
+            padding: 13px 20px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.25s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: linear-gradient(110deg, #ff659f, #b94eff);
+            color: white;
+            box-shadow: 0 5px 25px rgba(210, 75, 198, 0.30);
+        }
+
+        .secure-badge {
+            color: #f9d7ed;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .secure-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #61e6bb;
+            box-shadow: 0 0 14px #61e6bb;
+        }
+
+        /* HERO */
+
+        .hero {
+            width: min(1500px, 95%);
+            margin: 25px auto 35px;
+            color: white;
+            display: grid;
+            grid-template-columns: 1fr 270px;
+            gap: 35px;
+            align-items: center;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+            color: #ffc5e0;
+            margin-bottom: 17px;
+        }
+
+        .eyebrow span {
+            width: 28px;
+            height: 1px;
+            background: #ff7bb5;
+        }
+
+        .hero h1 {
+            font-family: "Plus Jakarta Sans", sans-serif;
+            font-size: clamp(34px, 3.7vw, 57px);
+            line-height: 1.17;
+            letter-spacing: -2px;
+            font-weight: 800;
+            max-width: 950px;
+        }
+
+        .hero h1 .gradient-text {
+            background: linear-gradient(
+                100deg,
+                #ff8cbd,
+                #e5a3ff,
+                #a8b6ff
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero-description {
+            max-width: 800px;
+            margin-top: 17px;
+            color: #d5dced;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+
+        .feature-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.075);
+            backdrop-filter: blur(14px);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .feature-icon {
+            width: 30px;
+            height: 30px;
+            display: grid;
+            place-items: center;
+            border-radius: 9px;
+            background: rgba(89, 181, 255, 0.18);
+            color: #8cdaff;
+            font-size: 16px;
+        }
+
+        .feature:nth-child(2) .feature-icon {
+            background: rgba(154, 102, 255, 0.20);
+            color: #d2adff;
+        }
+
+        .feature:nth-child(3) .feature-icon {
+            background: rgba(255, 112, 168, 0.18);
+            color: #ff9dc9;
+        }
+
+        .feature:nth-child(4) .feature-icon {
+            background: rgba(57, 223, 179, 0.15);
+            color: #76f0c8;
+        }
+
+        .quote-card {
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.19);
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.10);
+            backdrop-filter: blur(22px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
+            animation: floating-rotate 5s ease-in-out infinite;
+        }
+
+        .quote-mark {
+            font-family: Georgia, serif;
+            font-size: 52px;
+            color: #ff9bc9;
+            line-height: 0.8;
+        }
+
+        .quote-card p {
+            font-family: "Plus Jakarta Sans", sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: #fff;
+        }
+
+        .quote-footer {
+            text-align: right;
+            color: #ffb8da;
+            margin-top: 14px;
+            font-size: 13px;
+        }
+
+        /* MAIN LAYOUT */
+
+        .dashboard {
+            width: min(1500px, 95%);
+            margin: 0 auto 25px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.45fr) minmax(350px, 1fr);
+            gap: 15px;
+            align-items: stretch;
+        }
+
+        .glass-card {
+            min-width: 0;
+            border: 1px solid rgba(255, 255, 255, 0.75);
+            border-radius: 23px;
+            background: var(--glass);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(24px);
+            overflow: hidden;
+            animation: floating 6s ease-in-out infinite;
+        }
+
+        .card-header {
+            padding: 23px 25px 19px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-icon {
+            width: 52px;
+            height: 52px;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffe0ed, #f7c7e7);
+            color: #d73581;
+            font-size: 24px;
+        }
+
+        .results-card .header-icon {
+            background: linear-gradient(135deg, #e8e4ff, #e5d9ff);
+            color: #7950ed;
+        }
+
+        .card-header h2 {
+            font-family: "Plus Jakarta Sans", sans-serif;
+            font-size: 21px;
+            letter-spacing: -0.7px;
+            font-weight: 800;
+        }
+
+        .card-header p {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        /* FORM */
+
+        .transaction-form {
+            padding: 0 20px 20px;
+        }
+
+        .form-section {
+            padding: 15px;
+            margin-bottom: 13px;
+            border-radius: 17px;
+            border: 1px solid rgba(205, 196, 229, 0.20);
+        }
+
+        .section-basic {
+            background: linear-gradient(
+                125deg,
+                rgba(255, 226, 239, 0.63),
+                rgba(255, 255, 255, 0.45)
+            );
+        }
+
+        .section-sender {
+            background: linear-gradient(
+                125deg,
+                rgba(255, 233, 242, 0.70),
+                rgba(252, 235, 247, 0.35)
+            );
+        }
+
+        .section-receiver {
+            background: linear-gradient(
+                125deg,
+                rgba(229, 237, 255, 0.77),
+                rgba(237, 240, 255, 0.45)
+            );
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            color: white;
+            font-size: 13px;
+            font-weight: 800;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #ff629c, #e43e8b);
+            box-shadow: 0 4px 12px rgba(232, 66, 140, 0.20);
+        }
+
+        .section-receiver .step-number {
+            background: linear-gradient(135deg, #a25bff, #7449ef);
+        }
+
+        .section-heading h3 {
+            font-size: 14px;
+            color: #e43882;
+            font-weight: 800;
+        }
+
+        .section-receiver .section-heading h3 {
+            color: #7750ef;
+        }
+
+        .section-heading::after {
+            content: "";
+            height: 1px;
+            flex: 1;
+            background: rgba(205, 135, 178, 0.28);
+        }
+
+        .fields-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 15px 12px;
+        }
+
+        .fields-grid.two-columns {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .field {
+            min-width: 0;
+        }
+
+        .field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #414963;
+            margin-bottom: 7px;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap input,
+        .input-wrap select {
+            width: 100%;
+            min-width: 0;
+            height: 40px;
+            padding: 0 10px;
+            border: 1px solid #dedce9;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.83);
+            color: #252e49;
+            outline: none;
+            font-size: 12px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-wrap input:focus,
+        .input-wrap select:focus {
+            border-color: #e96eae;
+            box-shadow: 0 0 0 3px rgba(234, 103, 172, 0.11);
+        }
+
+        .input-wrap input::placeholder {
+            color: #a1a6b8;
+        }
+
+        .analyze-button {
+            width: 100%;
+            min-height: 49px;
+            margin-top: 5px;
+            border: 0;
+            border-radius: 40px;
+            color: white;
+            background: linear-gradient(100deg, #ff709d, #d74ae0, #7952ff);
+            box-shadow: 0 9px 23px rgba(185, 73, 204, 0.28);
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .analyze-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 13px 30px rgba(185, 73, 204, 0.35);
+        }
+
+        .analyze-button:disabled {
+            cursor: wait;
+            opacity: 0.7;
+            transform: none;
+        }
+
+        .button-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .button-arrow {
+            font-size: 21px;
+            line-height: 1;
+        }
+
+        .form-note {
+            color: #777e96;
+            font-size: 11px;
+            text-align: center;
+            line-height: 1.7;
+            margin-top: 12px;
+        }
+
+        /* RESULTS */
+
+        .results-card {
+            padding-bottom: 19px;
+            animation-delay: 1.5s;
+        }
+
+        .results-heading {
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .results-heading-main {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 12px;
+            border-radius: 30px;
+            background: #e8fbf3;
+            color: #258b6b;
+            font-size: 10px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .status-indicator {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #38c99a;
+        }
+
+        .status-pill.loading {
+            background: #fff3df;
+            color: #a66a12;
+        }
+
+        .status-pill.loading .status-indicator {
+            background: #f1a72e;
+            animation: pulse 0.8s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { opacity: 0.4; }
+            to { opacity: 1; }
+        }
+
+        .results-content {
+            padding: 0 18px;
+        }
+
+        .decision-panel {
+            padding: 20px;
+            border-radius: 19px;
+            background: linear-gradient(
+                120deg,
+                #fff0f6,
+                #f8efff
+            );
+            border: 1px solid rgba(234, 179, 215, 0.24);
+            display: grid;
+            grid-template-columns: 105px minmax(0, 1fr);
+            align-items: center;
+            gap: 17px;
+            margin-bottom: 15px;
+        }
+
+        .decision-emblem {
+            width: 95px;
+            height: 95px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            border: 9px solid #fbd2e7;
+            background: linear-gradient(135deg, #ffedf6, #f9d9ed);
+            box-shadow: 0 0 0 7px rgba(246, 195, 226, 0.13);
+        }
+
+        .shield {
+            width: 51px;
+            height: 57px;
+            clip-path: polygon(
+                50% 0,
+                95% 17%,
+                90% 66%,
+                50% 100%,
+                10% 66%,
+                5% 17%
+            );
+            display: grid;
+            place-items: center;
+            color: white;
+            font-size: 23px;
+            font-weight: 800;
+            background: linear-gradient(145deg, #fa6fa9, #9a368d);
+        }
+
+        .decision-label {
+            color: #6a6c85;
+            font-size: 12px;
+            margin-bottom: 9px;
+        }
+
+        .decision-value {
+            min-height: 50px;
+            padding: 12px 13px;
+            border-radius: 12px;
+            background: #fff0dc;
+            color: #a44312;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: "Plus Jakarta Sans", sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
+
+        .decision-value.approve {
+            background: #dcfce9;
+            color: #16704b;
+        }
+
+        .decision-value.review {
+            background: #fff0dc;
+            color: #a44312;
+        }
+
+        .decision-value.block {
+            background: #ffe3e9;
+            color: #b42345;
+        }
+
+        .decision-value.waiting {
+            background: #edf0ff;
+            color: #6250ba;
+        }
+
+        .decision-message {
+            font-size: 11px;
+            line-height: 1.7;
+            color: #6b6b86;
+            margin-top: 10px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 13px;
+        }
+
+        .metric {
+            min-width: 0;
+            min-height: 106px;
+            padding: 15px 12px;
+            border-radius: 17px;
+            border: 1px solid rgba(210, 205, 232, 0.35);
+            display: flex;
+            align-items: flex-start;
+            gap: 11px;
+        }
+
+        .metric-pink {
+            background: linear-gradient(135deg, #fff0f7, #fdf5fa);
+        }
+
+        .metric-blue {
+            background: linear-gradient(135deg, #edf4ff, #f5f7ff);
+        }
+
+        .metric-green {
+            background: linear-gradient(135deg, #e9fbf7, #f3fbfc);
+        }
+
+        .metric-orange {
+            background: linear-gradient(135deg, #fff2eb, #fff7f4);
+        }
+
+        .metric-purple {
+            background: linear-gradient(135deg, #f1ecff, #f8f5ff);
+        }
+
+        .metric-icon {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.82);
+            font-size: 19px;
+            box-shadow: 0 4px 15px rgba(53, 46, 105, 0.06);
+        }
+
+        .metric-info {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: #616b87;
+            line-height: 1.5;
+            margin: 3px 0 7px;
+        }
+
+        .metric-value {
+            display: block;
+            color: #222b49;
+            font-family: "Plus Jakarta Sans", sans-serif;
+            font-size: clamp(15px, 1.3vw, 20px);
+            font-weight: 800;
+            overflow-wrap: anywhere;
+        }
+
+        .metric-value.pink {
+            color: #c72f77;
+        }
+
+        .metric-value.red {
+            color: #dc393f;
+        }
+
+        .metric-value.green {
+            color: #14835f;
+        }
+
+        .metric-value.blue {
+            color: #356bd1;
+        }
+
+        .metric-value.orange {
+            color: #dc6c23;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            margin-top: 9px;
+            border-radius: 20px;
+            overflow: hidden;
+            background: rgba(204, 173, 210, 0.27);
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            border-radius: 20px;
+            background: linear-gradient(90deg, #ff609c, #f34585);
+            transition: width 0.6s ease;
+        }
+
+        .risk-bar {
+            background: linear-gradient(90deg, #ff9d46, #ff7d30);
+        }
+
+        .results-empty {
+            margin: 15px 0 0;
+            padding: 14px;
+            text-align: center;
+            border: 1px dashed #d7cbe9;
+            border-radius: 12px;
+            color: #7b7898;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .error-message {
+            display: none;
+            margin-top: 15px;
+            padding: 13px;
+            border: 1px solid #ffcbd4;
+            background: #fff0f2;
+            color: #a32743;
+            border-radius: 12px;
+            font-size: 12px;
+            line-height: 1.7;
+            overflow-wrap: anywhere;
+        }
+
+        /* STATS OVERVIEW & TABLE */
+        .stats-overview, .table-section {
+            width: min(1500px, 95%);
+            margin: 0 auto 25px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 15px;
+            padding: 0 25px 25px;
+        }
+
+        .stats-overview .card-header, .table-section .card-header {
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .stats-header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .refresh-btn {
+            padding: 8px 15px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: background 0.2s;
+        }
+        .refresh-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .table-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .filter-input, .filter-select {
+            height: 36px;
+            padding: 0 12px;
+            border: 1px solid #dedce9;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.83);
+            font-size: 12px;
+            color: #252e49;
+            outline: none;
+        }
+
+        .filter-input:focus, .filter-select:focus {
+            border-color: #e96eae;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            padding: 0 25px 25px;
+        }
+
+        .tx-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+            min-width: 800px;
+        }
+
+        .tx-table th {
+            color: #616b87;
+            font-weight: 700;
+            padding: 12px;
+            border-bottom: 1px solid rgba(210, 205, 232, 0.35);
+        }
+
+        .tx-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(210, 205, 232, 0.15);
+            color: #222b49;
+        }
+
+        .tx-table tr:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 800;
+        }
+        .badge.approve { background: #dcfce9; color: #16704b; }
+        .badge.review { background: #fff0dc; color: #a44312; }
+        .badge.block { background: #ffe3e9; color: #b42345; }
+
+        .btn-view {
+            padding: 5px 10px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(100deg, #a8b6ff, #8654ff);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(134, 84, 255, 0.2);
+            transition: transform 0.2s;
+        }
+        .btn-view:hover {
+            transform: translateY(-1px);
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(16, 26, 53, 0.6);
+            backdrop-filter: blur(5px);
+            display: none;
+            place-items: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: grid;
+        }
+
+        .modal-content {
+            width: min(800px, 100%);
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: none !important;
+            transform: translateY(0) !important;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #616b87;
+            padding: 5px;
+        }
+        .close-modal:hover {
+            color: #192441;
+        }
+
+        .modal-body {
+            padding: 0 25px 25px;
+        }
+
+        /* FOOTER */
+
+        .footer {
+            width: min(1500px, 95%);
+            min-height: 60px;
+            margin: auto;
+            padding: 16px 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            color: #d6d9e9;
+            font-size: 11px;
+            flex-wrap: wrap;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .footer-brand strong {
+            color: white;
+        }
+
+        .footer-heart {
+            color: #ff83b7;
+        }
+
+        .footer-center {
+            text-align: center;
+        }
+
+        /* RESPONSIVE */
+
+        @media (min-width: 1600px) {
+            .dashboard {
+                grid-template-columns: minmax(0, 1.45fr) minmax(430px, 1fr);
+            }
+        }
+
+        @media (max-width: 1100px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .navbar {
+                flex-wrap: wrap;
+                padding: 20px 0;
+            }
+
+            .secure-badge {
+                display: none;
+            }
+
+            .hero {
+                grid-template-columns: 1fr;
+                margin-top: 15px;
+            }
+
+            .quote-card {
+                display: none;
+            }
+
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .results-card {
+                min-height: 0;
+            }
+
+            .metric-value {
+                font-size: 19px;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                padding: 0 16px 20px;
+            }
+            .table-responsive, .modal-body {
+                padding: 0 16px 20px;
+            }
+
+            .navbar {
+                width: 92%;
+                gap: 18px;
+            }
+
+            .brand-icon {
+                width: 44px;
+                height: 49px;
+                font-size: 25px;
+            }
+
+            .brand-name {
+                font-size: 23px;
+            }
+
+            .brand-subtitle {
+                font-size: 10px;
+            }
+
+            .nav-links {
+                width: 100%;
+                justify-content: space-around;
+                overflow-x: auto;
+            }
+
+            .nav-links a {
+                padding: 11px 12px;
+                font-size: 11px;
+                white-space: nowrap;
+            }
+
+            .hero {
+                width: 92%;
+                margin-bottom: 25px;
+            }
+
+            .hero h1 {
+                font-size: 35px;
+                letter-spacing: -1.5px;
+            }
+
+            .hero-description {
+                font-size: 14px;
+            }
+
+            .feature-list {
+                gap: 8px;
+            }
+
+            .feature {
+                font-size: 10px;
+                padding: 8px 10px;
+            }
+
+            .feature-icon {
+                width: 26px;
+                height: 26px;
+            }
+
+            .dashboard {
+                width: 92%;
+            }
+
+            .card-header {
+                padding: 20px 16px;
+            }
+
+            .card-header h2 {
+                font-size: 18px;
+            }
+
+            .transaction-form {
+                padding: 0 12px 15px;
+            }
+
+            .form-section {
+                padding: 12px;
+            }
+
+            .fields-grid,
+            .fields-grid.two-columns {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 13px 9px;
+            }
+
+            .field label {
+                font-size: 10px;
+            }
+
+            .input-wrap input,
+            .input-wrap select {
+                font-size: 11px;
+                padding: 0 7px;
+            }
+
+            .results-content {
+                padding: 0 12px;
+            }
+
+            .decision-panel {
+                grid-template-columns: 70px minmax(0, 1fr);
+                gap: 12px;
+                padding: 14px;
+            }
+
+            .decision-emblem {
+                width: 65px;
+                height: 65px;
+                border-width: 6px;
+            }
+
+            .shield {
+                width: 38px;
+                height: 43px;
+                font-size: 17px;
+            }
+
+            .decision-value {
+                font-size: 16px;
+                min-height: 45px;
+            }
+
+            .metrics-grid {
+                gap: 9px;
+            }
+
+            .metric {
+                padding: 12px 9px;
+                gap: 8px;
+                min-height: 100px;
+            }
+
+            .metric-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 15px;
+            }
+
+            .metric-label {
+                font-size: 9px;
+            }
+
+            .metric-value {
+                font-size: 14px;
+            }
+
+            .footer {
+                justify-content: center;
+                text-align: center;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page-background"></div>
+<div class="ambient ambient-one"></div>
+<div class="ambient ambient-two"></div>
+
+<!-- NAVIGATION -->
+
+<header class="navbar">
+
+    <a href="#home"
+       class="brand"
+       style="text-decoration:none;color:inherit">
+
+        <div class="brand-icon">✦</div>
+
+        <div>
+            <div class="brand-name">
+                Fraud<span>Guard</span>
+            </div>
+
+            <div class="brand-subtitle">
+                Real-Time Fraud Detection System
+            </div>
+        </div>
+
+    </a>
+
+    <nav class="nav-links">
+        <a href="#home" class="active">⌂ Home</a>
+        <a href="#about">ⓘ About</a>
+        <a href="#how-it-works">◎ How it Works</a>
+        <a href="#results">▥ Insights</a>
+    </nav>
+
+    <div class="secure-badge">
+        <span class="secure-dot"></span>
+        Intelligent Risk Analysis
+    </div>
+
+</header>
+
+
+<!-- HERO -->
+
+<section class="hero" id="home">
+
+    <div>
+
+        <div class="eyebrow">
+            <span></span>
+            SMARTER SECURITY · SAFER TOMORROWS
+        </div>
+
+        <h1>
+            Detect <span class="gradient-text">Fraudulent</span>
+            Transactions
+        </h1>
+
+        <p class="hero-description">
+            Machine learning powered risk assessment to help keep your
+            financial transactions safe, secure, and trustworthy.
+        </p>
+
+        <div class="feature-list">
+
+            <div class="feature">
+                <div class="feature-icon">✧</div>
+                AI Powered
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">ϟ</div>
+                Real-Time Analysis
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">▥</div>
+                Risk Scoring
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">◎</div>
+                Anomaly Detection
+            </div>
+
+        </div>
+
+    </div>
+
+    <aside class="quote-card" id="about">
+
+        <div class="quote-mark">“</div>
+
+        <p>
+            Because every safe transaction builds a more beautiful tomorrow.
+        </p>
+
+        <div class="quote-footer">
+            Secure Transactions <span>♥</span>
+        </div>
+
+    </aside>
+
+</section>
+
+
+<!-- STATS OVERVIEW -->
+
+<section class="glass-card stats-overview" id="stats">
+    <div class="card-header">
+        <div class="stats-header-left">
+            <div class="header-icon" style="background: linear-gradient(135deg, #e8fbf3, #cbf5e5); color: #258b6b;">Σ</div>
+            <div>
+                <h2>Analytics Overview</h2>
+                <p>Real-time system statistics</p>
+            </div>
+        </div>
+        <button id="refreshStatsBtn" class="refresh-btn" type="button">↻ Refresh Stats</button>
+    </div>
+    <div class="metrics-grid stats-grid" id="statsGrid">
+        <div class="metric metric-blue">
+            <div class="metric-icon">Σ</div>
+            <div class="metric-info">
+                <div class="metric-label">Total Transactions</div>
+                <strong class="metric-value blue" id="statTotal">—</strong>
+            </div>
+        </div>
+        <div class="metric metric-pink">
+            <div class="metric-icon">◎</div>
+            <div class="metric-info">
+                <div class="metric-label">Fraud Predicted</div>
+                <strong class="metric-value pink" id="statFraud">—</strong>
+            </div>
+        </div>
+        <div class="metric metric-green">
+            <div class="metric-icon">✓</div>
+            <div class="metric-info">
+                <div class="metric-label">Approved</div>
+                <strong class="metric-value green" id="statApprove">—</strong>
+            </div>
+        </div>
+        <div class="metric metric-orange">
+            <div class="metric-icon">⚠</div>
+            <div class="metric-info">
+                <div class="metric-label">Reviewed</div>
+                <strong class="metric-value orange" id="statReview">—</strong>
+            </div>
+        </div>
+        <div class="metric metric-purple">
+            <div class="metric-icon">✕</div>
+            <div class="metric-info">
+                <div class="metric-label">Blocked</div>
+                <strong class="metric-value" style="color: #b42345" id="statBlock">—</strong>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- MAIN DASHBOARD -->
+
+<main class="dashboard">
+
+    <!-- TRANSACTION FORM -->
+
+    <section class="glass-card" id="transaction">
+
+        <div class="card-header">
+
+            <div class="header-icon">▤</div>
+
+            <div>
+                <h2>Transaction Details</h2>
+                <p>Enter transaction information to analyze fraud risk.</p>
+            </div>
+
+        </div>
+
+        <form class="transaction-form" id="transactionForm">
+
+            <!-- BASIC TRANSACTION -->
+
+            <section class="form-section section-basic">
+
+                <div class="section-heading">
+                    <div class="step-number">1</div>
+                    <h3>Basic Transaction Information</h3>
+                </div>
+
+                <div class="fields-grid">
+
+                    <div class="field">
+                        <label for="TX_ID">Transaction ID</label>
+                        <div class="input-wrap">
+                            <input id="TX_ID"
+                                   value="TEST_TX_001"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="TX_TYPE">Transaction Type</label>
+                        <div class="input-wrap">
+                            <select id="TX_TYPE" required>
+                                <option value="TRANSFER">TRANSFER</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="TX_AMOUNT">Transaction Amount (₹)</label>
+                        <div class="input-wrap">
+                            <input id="TX_AMOUNT"
+                                   type="number"
+                                   min="0.01"
+                                   step="any"
+                                   value="5000"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="TIMESTAMP">Timestamp</label>
+                        <div class="input-wrap">
+                            <input id="TIMESTAMP"
+                                   type="number"
+                                   step="any"
+                                   value="200"
+                                   required>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- SENDER -->
+
+            <section class="form-section section-sender">
+
+                <div class="section-heading">
+                    <div class="step-number">2</div>
+                    <h3>Sender Information</h3>
+                </div>
+
+                <div class="fields-grid">
+
+                    <div class="field">
+                        <label for="SENDER_ACCOUNT_ID">Account ID</label>
+                        <div class="input-wrap">
+                            <input id="SENDER_ACCOUNT_ID"
+                                   value="ACC_0001"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="SENDER_CUSTOMER_ID">Customer ID</label>
+                        <div class="input-wrap">
+                            <input id="SENDER_CUSTOMER_ID"
+                                   value="CUST_0001"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="SENDER_COUNTRY">Country</label>
+                        <div class="input-wrap">
+                            <input id="SENDER_COUNTRY"
+                                   value="IND"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="SENDER_ACCOUNT_TYPE">Account Type</label>
+                        <div class="input-wrap">
+                            <select id="SENDER_ACCOUNT_TYPE" required>
+                                <option value="SAVINGS">SAVINGS</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="SENDER_INIT_BALANCE">Initial Balance (₹)</label>
+                        <div class="input-wrap">
+                            <input id="SENDER_INIT_BALANCE"
+                                   type="number"
+                                   min="0"
+                                   step="any"
+                                   value="50000"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="SENDER_TX_BEHAVIOR_ID">Behavior ID</label>
+                        <div class="input-wrap">
+                            <input id="SENDER_TX_BEHAVIOR_ID"
+                                   type="number"
+                                   step="1"
+                                   value="1"
+                                   required>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- RECEIVER -->
+
+            <section class="form-section section-receiver">
+
+                <div class="section-heading">
+                    <div class="step-number">3</div>
+                    <h3>Receiver Information</h3>
+                </div>
+
+                <div class="fields-grid">
+
+                    <div class="field">
+                        <label for="RECEIVER_ACCOUNT_ID">Account ID</label>
+                        <div class="input-wrap">
+                            <input id="RECEIVER_ACCOUNT_ID"
+                                   value="ACC_0002"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="RECEIVER_CUSTOMER_ID">Customer ID</label>
+                        <div class="input-wrap">
+                            <input id="RECEIVER_CUSTOMER_ID"
+                                   value="CUST_0002"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="RECEIVER_COUNTRY">Country</label>
+                        <div class="input-wrap">
+                            <input id="RECEIVER_COUNTRY"
+                                   value="IND"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="RECEIVER_ACCOUNT_TYPE">Account Type</label>
+                        <div class="input-wrap">
+                            <select id="RECEIVER_ACCOUNT_TYPE" required>
+                                <option value="SAVINGS">SAVINGS</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="RECEIVER_INIT_BALANCE">Initial Balance (₹)</label>
+                        <div class="input-wrap">
+                            <input id="RECEIVER_INIT_BALANCE"
+                                   type="number"
+                                   min="0"
+                                   step="any"
+                                   value="30000"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="RECEIVER_TX_BEHAVIOR_ID">Behavior ID</label>
+                        <div class="input-wrap">
+                            <input id="RECEIVER_TX_BEHAVIOR_ID"
+                                   type="number"
+                                   step="1"
+                                   value="1"
+                                   required>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <button class="analyze-button"
+                    id="submitButton"
+                    type="submit">
+
+                <span class="button-content">
+                    <span id="buttonIcon">✧</span>
+                    <span id="buttonText">Analyze Transaction</span>
+                    <span class="button-arrow">›</span>
+                </span>
+
+            </button>
+
+            <p class="form-note" id="formStatus" role="status">
+                Your transaction will be analyzed using the trained ML models.
+            </p>
+
+        </form>
+
+    </section>
+
+
+    <!-- RESULTS PANEL -->
+
+    <section class="glass-card results-card" id="results">
+
+        <div class="card-header results-heading">
+
+            <div class="results-heading-main">
+
+                <div class="header-icon">▥</div>
+
+                <div>
+                    <h2>Prediction Results</h2>
+                    <p>Model analysis and risk assessment</p>
+                </div>
+
+            </div>
+
+            <div class="status-pill" id="analysisStatus">
+                <span class="status-indicator"></span>
+                <span id="statusText">Ready to Analyze</span>
+            </div>
+
+        </div>
+
+
+        <div class="results-content">
+
+            <!-- FINAL DECISION -->
+
+            <div class="decision-panel">
+
+                <div class="decision-emblem">
+                    <div class="shield">✦</div>
+                </div>
+
+                <div>
+
+                    <div class="decision-label">Final Decision</div>
+
+                    <div class="decision-value waiting"
+                         id="finalDecision">
+
+                        <span id="decisionIcon">✧</span>
+                        <span id="decisionText">AWAITING ANALYSIS</span>
+
+                    </div>
+
+                    <p class="decision-message" id="decisionMessage">
+                        Submit a transaction to receive a risk assessment.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- METRICS -->
+
+            <div class="metrics-grid">
+
+                <div class="metric metric-pink">
+
+                    <div class="metric-icon">◎</div>
+
+                    <div class="metric-info">
+
+                        <div class="metric-label">Fraud Probability</div>
+
+                        <strong class="metric-value pink"
+                                id="fraudProbability">—</strong>
+
+                        <div class="progress-track">
+                            <div class="progress-bar"
+                                 id="fraudBar"></div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="metric metric-blue">
+
+                    <div class="metric-icon">✧</div>
+
+                    <div class="metric-info">
+
+                        <div class="metric-label">Fraud Prediction</div>
+
+                        <strong class="metric-value blue"
+                                id="fraudPrediction">—</strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="metric metric-green">
+
+                    <div class="metric-icon">⬡</div>
+
+                    <div class="metric-info">
+
+                        <div class="metric-label">Anomaly Detected</div>
+
+                        <strong class="metric-value green"
+                                id="anomalyDetected">—</strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="metric metric-orange">
+
+                    <div class="metric-icon">↗</div>
+
+                    <div class="metric-info">
+
+                        <div class="metric-label">Risk Score</div>
+
+                        <strong class="metric-value orange"
+                                id="riskScore">—</strong>
+
+                        <div class="progress-track">
+                            <div class="progress-bar risk-bar"
+                                 id="riskBar"></div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="metric metric-purple">
+
+                    <div class="metric-icon">∿</div>
+
+                    <div class="metric-info">
+
+                        <div class="metric-label">
+                            Isolation Decision Score
+                        </div>
+
+                        <strong class="metric-value"
+                                id="isolationScore">—</strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="metric metric-blue">
+
+                    <div class="metric-icon">ⓘ</div>
+
+                    <div class="metric-info">
+
+                        <div class="metric-label">Transaction ID</div>
+
+                        <strong class="metric-value"
+                                id="resultTransactionId">—</strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="results-empty" id="resultsNote">
+                <strong>How it works</strong><br>
+                Your supervised model estimates fraud probability.
+                Isolation Forest detects unusual activity, and the
+                risk engine combines the signals into a final decision.
+            </div>
+
+            <div class="error-message"
+                 id="errorMessage"
+                 role="alert"></div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- TRANSACTIONS HISTORY -->
+
+<section class="glass-card table-section" id="history">
+    <div class="card-header results-heading">
+        <div class="results-heading-main">
+            <div class="header-icon" style="background: linear-gradient(135deg, #fff0f7, #fdf5fa); color: #c72f77;">≡</div>
+            <div>
+                <h2>Recent Transactions</h2>
+                <p>History and decisions</p>
+            </div>
+        </div>
+        <div class="table-filters">
+            <input type="text" id="filterTxId" placeholder="Search TX ID..." class="filter-input">
+            <select id="filterDecision" class="filter-select">
+                <option value="">All Decisions</option>
+                <option value="APPROVE">APPROVE</option>
+                <option value="REVIEW">REVIEW</option>
+                <option value="BLOCK">BLOCK</option>
+            </select>
+            <select id="filterType" class="filter-select">
+                <option value="">All Types</option>
+                <option value="TRANSFER">TRANSFER</option>
+            </select>
+            <button id="refreshTableBtn" class="refresh-btn" type="button">↻ Refresh</button>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="tx-table" id="txTable">
+            <thead>
+                <tr>
+                    <th>TX ID</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Fraud Prob</th>
+                    <th>Risk Score</th>
+                    <th>Anomaly</th>
+                    <th>Decision</th>
+                    <th>Time</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="txTableBody">
+                <!-- Rows injected via JS -->
+            </tbody>
+        </table>
+        <div id="txTableEmpty" class="results-empty">No transactions found.</div>
+        <div id="txTableLoading" class="results-empty" style="display:none">Loading transactions...</div>
+        <div id="txTableError" class="error-message"></div>
+    </div>
+</section>
+
+
+<!-- FOOTER -->
+
+<footer class="footer" id="how-it-works">
+
+    <div class="footer-brand">
+        <span class="footer-heart">✦</span>
+        <strong>FraudGuard</strong>
+        <span>|</span>
+        Real-Time Fraud Detection
+    </div>
+
+    <div class="footer-center">
+        Secure Today <span class="footer-heart">♥</span>
+        Safer Tomorrow
+    </div>
+
+    <div>
+        Powered by Machine Learning
+    </div>
+
+</footer>
+
+<!-- TRANSACTION DETAILS MODAL -->
+<div id="txModal" class="modal-overlay">
+    <div class="glass-card modal-content">
+        <div class="card-header" style="justify-content: space-between;">
+            <div class="results-heading-main">
+                <div class="header-icon">ⓘ</div>
+                <div>
+                    <h2>Transaction Details</h2>
+                    <p id="modalTxIdTitle">ID: </p>
+                </div>
+            </div>
+            <button class="close-modal" id="closeModal">✕</button>
+        </div>
+        <div id="modalLoading" class="results-empty">Loading details...</div>
+        <div id="modalError" class="error-message" style="margin: 0 25px 25px;"></div>
+        <div id="modalBody" class="modal-body" style="display:none">
+            <!-- Injected via JS -->
+        </div>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById("transactionForm");
+
+    const submitButton = document.getElementById("submitButton");
+    const buttonText = document.getElementById("buttonText");
+    const buttonIcon = document.getElementById("buttonIcon");
+
+    const formStatus = document.getElementById("formStatus");
+
+    const analysisStatus = document.getElementById("analysisStatus");
+    const statusText = document.getElementById("statusText");
+
+    const errorMessage = document.getElementById("errorMessage");
+    const resultsNote = document.getElementById("resultsNote");
+
+    const decisionElement = document.getElementById("finalDecision");
+    const decisionText = document.getElementById("decisionText");
+    const decisionIcon = document.getElementById("decisionIcon");
+    const decisionMessage = document.getElementById("decisionMessage");
+
+    let allTransactions = [];
+
+    function getValue(id) {
+        return document.getElementById(id).value.trim();
+    }
+
+    function getNumber(id) {
+        return Number(getValue(id));
+    }
+
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = "block";
+    }
+
+    function setStatus(status, text) {
+        analysisStatus.className = "status-pill";
+
+        if (status === "loading") {
+            analysisStatus.classList.add("loading");
+        }
+
+        statusText.textContent = text;
+    }
+
+    function resetResults() {
+        errorMessage.style.display = "none";
+
+        document.getElementById("fraudProbability").textContent = "—";
+        document.getElementById("fraudPrediction").textContent = "—";
+        document.getElementById("anomalyDetected").textContent = "—";
+        document.getElementById("riskScore").textContent = "—";
+        document.getElementById("isolationScore").textContent = "—";
+        document.getElementById("resultTransactionId").textContent = "—";
+
+        document.getElementById("fraudBar").style.width = "0%";
+        document.getElementById("riskBar").style.width = "0%";
+
+        decisionElement.className = "decision-value waiting";
+        decisionText.textContent = "ANALYZING...";
+        decisionIcon.textContent = "◌";
+
+        decisionMessage.textContent =
+            "Your transaction is being evaluated by the ML models.";
+
+        resultsNote.style.display = "block";
+    }
+
+    function displayPrediction(data) {
+        const prediction = data.prediction;
+
+        if (!prediction || typeof prediction !== "object") {
+            throw new Error("The server returned an invalid prediction response.");
+        }
+
+        const fraudProbability = Number(prediction.fraud_probability);
+        const riskScore = Number(prediction.risk_score);
+
+        if (
+            !Number.isFinite(fraudProbability) ||
+            fraudProbability < 0 ||
+            fraudProbability > 1
+        ) {
+            throw new Error("The server returned an invalid fraud probability.");
+        }
+
+        if (
+            !Number.isFinite(riskScore) ||
+            riskScore < 0 ||
+            riskScore > 1
+        ) {
+            throw new Error("The server returned an invalid risk score.");
+        }
+
+        const decision = String(prediction.decision || "").toUpperCase();
+
+        if (!["APPROVE", "REVIEW", "BLOCK"].includes(decision)) {
+            throw new Error("The server returned an unknown risk decision.");
+        }
+
+        document.getElementById("fraudProbability").textContent =
+            (fraudProbability * 100).toFixed(2) + "%";
+
+        document.getElementById("fraudBar").style.width =
+            (fraudProbability * 100) + "%";
+
+        document.getElementById("fraudPrediction").textContent =
+            Number(prediction.fraud_prediction) === 1
+                ? "Fraud Predicted"
+                : "Non-Fraud";
+
+        document.getElementById("anomalyDetected").textContent =
+            prediction.is_anomaly ? "Yes" : "No";
+
+        document.getElementById("riskScore").textContent =
+            (riskScore * 100).toFixed(2) + "%";
+
+        document.getElementById("riskBar").style.width =
+            (riskScore * 100) + "%";
+
+        document.getElementById("isolationScore").textContent =
+            Number.isFinite(Number(prediction.isolation_decision_score))
+                ? Number(prediction.isolation_decision_score).toFixed(4)
+                : "N/A";
+
+        document.getElementById("resultTransactionId").textContent =
+            data.transaction_id || getValue("TX_ID");
+
+        decisionElement.className = "decision-value " + decision.toLowerCase();
+
+        decisionText.textContent = decision;
+
+        if (decision === "APPROVE") {
+            decisionIcon.textContent = "✓";
+
+            decisionMessage.textContent =
+                "The model's risk assessment is below the review threshold. " +
+                "This is not a guarantee that the transaction is safe.";
+        } else if (decision === "REVIEW") {
+            decisionIcon.textContent = "⚠";
+
+            decisionMessage.textContent =
+                "This transaction has reached the review threshold. " +
+                "Further verification may be appropriate.";
+        } else {
+            decisionIcon.textContent = "✕";
+
+            decisionMessage.textContent =
+                "The model's risk assessment reached the block threshold. " +
+                "Verify the result against your transaction-handling policy.";
+        }
+
+        resultsNote.style.display = "none";
+
+        setStatus("success", "Analysis Complete");
+
+        formStatus.textContent =
+            "Analysis completed for transaction " +
+            (data.transaction_id || getValue("TX_ID")) + ".";
+            
+        // Refresh dashboard data
+        fetchStats();
+        fetchTransactions();
+    }
+
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        errorMessage.style.display = "none";
+
+        const transaction = {
+            TX_ID: getValue("TX_ID"),
+            SENDER_ACCOUNT_ID: getValue("SENDER_ACCOUNT_ID"),
+            RECEIVER_ACCOUNT_ID: getValue("RECEIVER_ACCOUNT_ID"),
+
+            TX_TYPE: getValue("TX_TYPE"),
+
+            TX_AMOUNT: getNumber("TX_AMOUNT"),
+            TIMESTAMP: getNumber("TIMESTAMP"),
+
+            SENDER_CUSTOMER_ID: getValue("SENDER_CUSTOMER_ID"),
+            RECEIVER_CUSTOMER_ID: getValue("RECEIVER_CUSTOMER_ID"),
+
+            SENDER_COUNTRY: getValue("SENDER_COUNTRY"),
+            RECEIVER_COUNTRY: getValue("RECEIVER_COUNTRY"),
+
+            SENDER_ACCOUNT_TYPE: getValue("SENDER_ACCOUNT_TYPE"),
+            RECEIVER_ACCOUNT_TYPE: getValue("RECEIVER_ACCOUNT_TYPE"),
+
+            SENDER_INIT_BALANCE: getNumber("SENDER_INIT_BALANCE"),
+            RECEIVER_INIT_BALANCE: getNumber("RECEIVER_INIT_BALANCE"),
+
+            SENDER_TX_BEHAVIOR_ID: getNumber("SENDER_TX_BEHAVIOR_ID"),
+            RECEIVER_TX_BEHAVIOR_ID: getNumber("RECEIVER_TX_BEHAVIOR_ID")
+        };
+
+        if (
+            !Number.isFinite(transaction.TX_AMOUNT) ||
+            transaction.TX_AMOUNT <= 0
+        ) {
+            showError("Transaction amount must be greater than zero.");
+            return;
+        }
+
+        if (
+            !Number.isFinite(transaction.SENDER_INIT_BALANCE) ||
+            !Number.isFinite(transaction.RECEIVER_INIT_BALANCE) ||
+            transaction.SENDER_INIT_BALANCE < 0 ||
+            transaction.RECEIVER_INIT_BALANCE < 0
+        ) {
+            showError("Balances must be valid non-negative numbers.");
+            return;
+        }
+
+        if (
+            !Number.isFinite(transaction.TIMESTAMP) ||
+            !Number.isInteger(transaction.SENDER_TX_BEHAVIOR_ID) ||
+            !Number.isInteger(transaction.RECEIVER_TX_BEHAVIOR_ID)
+        ) {
+            showError("Please enter a valid timestamp and integer behavior IDs.");
+            return;
+        }
+
+        submitButton.disabled = true;
+        buttonText.textContent = "Analyzing Transaction...";
+        buttonIcon.textContent = "◌";
+
+        setStatus("loading", "Analyzing");
+        resetResults();
+        setStatus("loading", "Analyzing");
+
+        formStatus.textContent =
+            "Sending transaction to the fraud detection API...";
+
+        try {
+            const response = await fetch("/predict", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(transaction)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                const detail = data.detail;
+
+                throw new Error(
+                    typeof detail === "string"
+                        ? detail
+                        : JSON.stringify(detail || data)
+                );
+            }
+
+            displayPrediction(data);
+
+        } catch (error) {
+            setStatus("error", "Analysis Failed");
+
+            showError(
+                "Unable to complete the prediction. " +
+                error.message
+            );
+
+            formStatus.textContent =
+                "Please check the input and application logs, then try again.";
+
+        } finally {
+            submitButton.disabled = false;
+            buttonText.textContent = "Analyze Transaction";
+            buttonIcon.textContent = "✧";
+        }
+    });
+
+    // Smooth scrolling for the navigation links.
+    document.querySelectorAll('.nav-links a').forEach(function (link) {
+        link.addEventListener("click", function (event) {
+            const target = document.querySelector(
+                link.getAttribute("href")
+            );
+
+            if (target) {
+                event.preventDefault();
+
+                target.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            }
+
+            document.querySelectorAll(".nav-links a").forEach(function (item) {
+                item.classList.remove("active");
+            });
+
+            link.classList.add("active");
+        });
+    });
+
+    // --- DASHBOARD ANALYTICS & HISTORY ---
+
+    async function fetchStats() {
+        try {
+            const response = await fetch("/stats");
+            if (!response.ok) throw new Error("Failed to fetch statistics");
+            const data = await response.json();
+            
+            document.getElementById("statTotal").textContent = data.total_transactions || 0;
+            document.getElementById("statFraud").textContent = data.fraud_predictions || 0;
+            document.getElementById("statApprove").textContent = data.approve_decisions || 0;
+            document.getElementById("statReview").textContent = data.review_decisions || 0;
+            document.getElementById("statBlock").textContent = data.block_decisions || 0;
+        } catch (error) {
+            console.error(error);
+            const errStr = "Err";
+            document.getElementById("statTotal").textContent = errStr;
+            document.getElementById("statFraud").textContent = errStr;
+            document.getElementById("statApprove").textContent = errStr;
+            document.getElementById("statReview").textContent = errStr;
+            document.getElementById("statBlock").textContent = errStr;
+        }
+    }
+
+    async function fetchTransactions() {
+        const loader = document.getElementById("txTableLoading");
+        const empty = document.getElementById("txTableEmpty");
+        const errorEl = document.getElementById("txTableError");
+        const tbody = document.getElementById("txTableBody");
+        const table = document.getElementById("txTable");
+
+        loader.style.display = "block";
+        empty.style.display = "none";
+        errorEl.style.display = "none";
+        table.style.display = "none";
+
+        try {
+            const response = await fetch("/transactions");
+            if (!response.ok) throw new Error("Failed to fetch transactions");
+            const data = await response.json();
+            
+            allTransactions = Array.isArray(data) ? data : (data.transactions || []);
+            renderTransactions();
+        } catch (error) {
+            loader.style.display = "none";
+            errorEl.textContent = error.message;
+            errorEl.style.display = "block";
+        }
+    }
+
+    function renderTransactions() {
+        const tbody = document.getElementById("txTableBody");
+        const empty = document.getElementById("txTableEmpty");
+        const loader = document.getElementById("txTableLoading");
+        const table = document.getElementById("txTable");
+        
+        loader.style.display = "none";
+        tbody.innerHTML = "";
+
+        const filterTxId = document.getElementById("filterTxId").value.toLowerCase();
+        const filterDecision = document.getElementById("filterDecision").value;
+        const filterType = document.getElementById("filterType").value;
+
+        const filtered = allTransactions.filter(tx => {
+            if (filterDecision && String(tx.decision || "").toUpperCase() !== filterDecision) return false;
+            if (filterType && tx.transaction_type !== filterType) return false;
+            if (filterTxId && !(tx.transaction_id || "").toLowerCase().includes(filterTxId)) return false;
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            empty.style.display = "block";
+            table.style.display = "none";
+            return;
+        }
+        
+        empty.style.display = "none";
+        table.style.display = "table";
+
+        filtered.forEach(tx => {
+            const tr = document.createElement("tr");
+            const dateStr = tx.created_at || tx.transaction_timestamp;
+            const date = dateStr ? new Date(dateStr).toLocaleString() : "N/A";
+            const decision = String(tx.decision || "N/A").toUpperCase();
+            
+            tr.innerHTML = `
+                <td>${escapeHtml(tx.transaction_id || "")}</td>
+                <td>${escapeHtml(tx.transaction_type || "")}</td>
+                <td>₹${Number(tx.transaction_amount || 0).toLocaleString()}</td>
+                <td>${(Number(tx.fraud_probability || 0) * 100).toFixed(2)}%</td>
+                <td>${(Number(tx.risk_score || 0) * 100).toFixed(2)}%</td>
+                <td>${tx.is_anomaly ? "Yes" : "No"}</td>
+                <td><span class="badge ${decision.toLowerCase()}">${escapeHtml(decision)}</span></td>
+                <td>${date}</td>
+                <td><button type="button" class="btn-view" onclick="viewTransaction('${escapeHtml(tx.transaction_id)}')">View</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function viewTransaction(id) {
+        const modal = document.getElementById("txModal");
+        const loader = document.getElementById("modalLoading");
+        const errorEl = document.getElementById("modalError");
+        const body = document.getElementById("modalBody");
+        
+        modal.classList.add("active");
+        document.getElementById("modalTxIdTitle").textContent = "ID: " + escapeHtml(id);
+        
+        loader.style.display = "block";
+        errorEl.style.display = "none";
+        body.style.display = "none";
+        body.innerHTML = "";
+
+        try {
+            const response = await fetch('/transactions/' + encodeURIComponent(id));
+            if (!response.ok) throw new Error("Failed to fetch details");
+            const tx = await response.json();
+            
+            loader.style.display = "none";
+            body.style.display = "block";
+            
+            const dateStr = tx.created_at || tx.transaction_timestamp;
+            const date = dateStr ? new Date(dateStr).toLocaleString() : "N/A";
+
+            body.innerHTML = `
+                <div class="fields-grid two-columns">
+                    <div class="field"><label>Transaction ID</label><div class="input-wrap"><input value="${escapeHtml(tx.transaction_id)}" readonly></div></div>
+                    <div class="field"><label>Type</label><div class="input-wrap"><input value="${escapeHtml(tx.transaction_type)}" readonly></div></div>
+                    <div class="field"><label>Amount</label><div class="input-wrap"><input value="₹${Number(tx.transaction_amount || 0).toLocaleString()}" readonly></div></div>
+                    <div class="field"><label>Time</label><div class="input-wrap"><input value="${date}" readonly></div></div>
+                    <div class="field"><label>Sender Account</label><div class="input-wrap"><input value="${escapeHtml(tx.sender_account_id)}" readonly></div></div>
+                    <div class="field"><label>Receiver Account</label><div class="input-wrap"><input value="${escapeHtml(tx.receiver_account_id)}" readonly></div></div>
+                    <div class="field"><label>Fraud Probability</label><div class="input-wrap"><input value="${(Number(tx.fraud_probability || 0)*100).toFixed(2)}%" readonly></div></div>
+                    <div class="field"><label>Risk Score</label><div class="input-wrap"><input value="${(Number(tx.risk_score || 0)*100).toFixed(2)}%" readonly></div></div>
+                    <div class="field"><label>Anomaly Status</label><div class="input-wrap"><input value="${tx.is_anomaly ? 'Yes' : 'No'}" readonly></div></div>
+                    <div class="field"><label>Decision</label><div class="input-wrap"><input value="${escapeHtml(String(tx.decision).toUpperCase())}" readonly></div></div>
+                </div>
+            `;
+        } catch (error) {
+            loader.style.display = "none";
+            errorEl.textContent = "Unable to load details. " + error.message;
+            errorEl.style.display = "block";
+        }
+    }
+
+    function escapeHtml(unsafe) {
+        if (unsafe == null) return "";
+        return String(unsafe)
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
+    }
+
+    // Event Listeners
+    document.getElementById("filterTxId").addEventListener("input", renderTransactions);
+    document.getElementById("filterDecision").addEventListener("change", renderTransactions);
+    document.getElementById("filterType").addEventListener("change", renderTransactions);
+    
+    document.getElementById("refreshStatsBtn").addEventListener("click", fetchStats);
+    document.getElementById("refreshTableBtn").addEventListener("click", fetchTransactions);
+    
+    document.getElementById("closeModal").addEventListener("click", () => {
+        document.getElementById("txModal").classList.remove("active");
+    });
+    
+    // Close modal on click outside
+    window.addEventListener("click", (e) => {
+        const modal = document.getElementById("txModal");
+        if (e.target === modal) {
+            modal.classList.remove("active");
+        }
+    });
+
+    // Initialize dashboard data
+    document.addEventListener("DOMContentLoaded", () => {
+        fetchStats();
+        fetchTransactions();
+    });
+</script>
+
+</body>
+</html>
