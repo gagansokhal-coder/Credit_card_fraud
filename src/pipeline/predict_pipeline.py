@@ -6,6 +6,8 @@ import joblib
 
 from src.logger import logging
 from src.exception import CustomException
+from src.components.anomaly_detection import AnomalyDetection
+from src.components.risk_engine import RiskEngine
 
 
 class PredictPipeline:
@@ -577,189 +579,102 @@ class PredictPipeline:
 
     def predict(self, transaction):
         """
-        Run complete fraud prediction pipeline.
-        """
+        Run the complete fraud prediction pipeline."""
+    
 
         try:
+             logging.info("Starting transaction prediction.")
 
-            logging.info(
-                "Starting transaction prediction."
-            )
+        # 1. Load trained artifacts
+             self.load_artifacts()
 
-            # ----------------------------------------------------
-            # Load artifacts
-            # ----------------------------------------------------
+        # 2. Prepare transaction features
+             X = self.prepare_input(transaction)
 
-            self.load_artifacts()
+        # 3. Apply the fitted preprocessor
+             logging.info("Applying trained preprocessor.")
 
-            # ----------------------------------------------------
-            # Prepare features
-            # ----------------------------------------------------
+             X_transformed = self.preprocessor.transform(X)
 
-            X = self.prepare_input(
-                transaction
-            )
+             logging.info(
+            f"Transformed prediction shape: {X_transformed.shape}"
+         )
 
-            # ----------------------------------------------------
-            # Apply trained preprocessing
-            # ----------------------------------------------------
+        # 4. Predict fraud probability using the supervised model
+             fraud_probability = float(
+            self.model.predict_proba(X_transformed)[0, 1]
+         )
 
-            logging.info(
-                "Applying trained preprocessor."
-            )
+             fraud_prediction = int(fraud_probability >= 0.5)
 
-            X_transformed = (
-                self.preprocessor.transform(X)
-            )
+        # 5. Detect anomalies using the new component
+             anomaly_detector = AnomalyDetection()
 
-            logging.info(
-                f"Transformed prediction shape: "
-                f"{X_transformed.shape}"
-            )
+             anomaly_result = anomaly_detector.detect(X_transformed)[0]
 
-            # ====================================================
-            # SUPERVISED MODEL
-            # ====================================================
+             isolation_prediction = anomaly_result[
+            "isolation_prediction"
+        ]
 
-            fraud_probability = (
-                self.model.predict_proba(
-                    X_transformed
-                )[:, 1][0]
-            )
+             is_anomaly = anomaly_result["is_anomaly"]
 
-            fraud_prediction = int(
-                fraud_probability >= 0.5
-            )
+             isolation_decision = anomaly_result[
+            "isolation_decision_score"
+        ]
 
-            # ====================================================
-            # ISOLATION FOREST
-            # ====================================================
+             anomaly_score = 1.0 if is_anomaly else 0.0
 
-            isolation_prediction = int(
-                self.isolation_forest.predict(
-                    X_transformed
-                )[0]
-            )
+        # 6. Calculate the final risk score and decision
+             risk_engine = RiskEngine()
 
-            isolation_decision = float(
-                self.isolation_forest.decision_function(
-                    X_transformed
-                )[0]
-            )
+             risk_result = risk_engine.calculate_risk(
+            fraud_probability=fraud_probability,
+            is_anomaly=is_anomaly
+        )
 
-            # Isolation Forest:
-            #
-            #  1  = normal
-            # -1  = anomaly
+        # 7. Prepare the response
+             result = {
+            "fraud_probability": round(
+                fraud_probability, 6
+            ),
+            "fraud_prediction": fraud_prediction,
+            "isolation_prediction": isolation_prediction,
+            "is_anomaly": is_anomaly,
+            "anomaly_score": round(anomaly_score, 6),
+            "isolation_decision_score": round(
+                isolation_decision, 6
+            ),
+            "risk_score": risk_result["risk_score"],
+            "decision": risk_result["decision"]
+        }
 
-            is_anomaly = (
-                isolation_prediction == -1
-            )
+             logging.info(
+            f"Fraud probability: {result['fraud_probability']}"
+        )
 
-            anomaly_score = (
-                1.0 if is_anomaly else 0.0
-            )
+             logging.info(
+            f"Anomaly detected: {result['is_anomaly']}"
+        )
 
-            # ====================================================
-            # RISK SCORE
-            # ====================================================
+             logging.info(
+            f"Risk score: {result['risk_score']}"
+        )
 
-            risk_score = (
-                0.75 * fraud_probability
-                +
-                0.25 * anomaly_score
-            )
+             logging.info(
+            f"Final decision: {result['decision']}"
+        )
 
-            # Keep between 0 and 1
-            risk_score = max(
-                0.0,
-                min(1.0, risk_score)
-            )
+             logging.info("Transaction prediction completed.")
 
-            # ====================================================
-            # DECISION
-            # ====================================================
-
-            if risk_score >= 0.80:
-
-                decision = "BLOCK"
-
-            elif risk_score >= 0.50:
-
-                decision = "REVIEW"
-
-            else:
-
-                decision = "APPROVE"
-
-            # ====================================================
-            # RESULT
-            # ====================================================
-
-            result = {
-                "fraud_probability": round(
-                    float(fraud_probability),
-                    6
-                ),
-
-                "fraud_prediction": fraud_prediction,
-
-                "isolation_prediction": isolation_prediction,
-
-                "is_anomaly": is_anomaly,
-
-                "anomaly_score": round(
-                    float(anomaly_score),
-                    6
-                ),
-
-                "isolation_decision_score": round(
-                    isolation_decision,
-                    6
-                ),
-
-                "risk_score": round(
-                    float(risk_score),
-                    6
-                ),
-
-                "decision": decision,
-            }
-
-            logging.info(
-                f"Fraud probability: "
-                f"{result['fraud_probability']}"
-            )
-
-            logging.info(
-                f"Anomaly detected: "
-                f"{result['is_anomaly']}"
-            )
-
-            logging.info(
-                f"Risk score: "
-                f"{result['risk_score']}"
-            )
-
-            logging.info(
-                f"Final decision: "
-                f"{result['decision']}"
-            )
-
-            logging.info(
-                "Transaction prediction completed."
-            )
-
-            return result
+             return result
 
         except Exception as e:
+              logging.error(
+            "Prediction failed.",
+            exc_info=True
+        )
 
-            logging.error(
-                "Prediction failed.",
-                exc_info=True
-            )
-
-            raise CustomException(e, sys)
+              raise CustomException(e, sys)
 
 
 # ================================================================
