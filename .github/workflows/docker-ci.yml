@@ -92,17 +92,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Debug OIDC Token Claims
-        run: |
-          OIDC_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | jq -r '.value')
-
-          echo "=== OIDC Token Claims ==="
-          echo "$OIDC_TOKEN" | cut -d'.' -f2 | base64 -d 2>/dev/null | jq .
-
-          echo ""
-          echo "=== Key values to check ==="
-          echo "$OIDC_TOKEN" | cut -d'.' -f2 | base64 -d 2>/dev/null | jq '{sub, aud, iss, repository, repository_owner}'
 
       - name: Configure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v4
@@ -192,6 +181,9 @@ jobs:
             --region "$AWS_REGION"
 
       - name: Deploy to Elastic Beanstalk
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
           set -euo pipefail
 
@@ -199,6 +191,9 @@ jobs:
             --application-name "$EB_APPLICATION_NAME" \
             --environment-name "$EB_ENVIRONMENT_NAME" \
             --version-label "$VERSION_LABEL" \
+            --option-settings \
+              Namespace=aws:elasticbeanstalk:application:environment,OptionName=SUPABASE_URL,Value="$SUPABASE_URL" \
+              Namespace=aws:elasticbeanstalk:application:environment,OptionName=SUPABASE_KEY,Value="$SUPABASE_KEY" \
             --region "$AWS_REGION"
 
       - name: Wait for deployment to finish
