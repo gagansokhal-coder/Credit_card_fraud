@@ -98,6 +98,7 @@ jobs:
           role-to-assume: arn:aws:iam::286879406932:role/GitHubActions-FraudGuard-Deploy
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: GitHubActionsSession
+          audience: sts.amazonaws.com
 
       - name: Login to Amazon ECR
         id: login-ecr
