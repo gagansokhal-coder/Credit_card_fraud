@@ -1,4 +1,17 @@
-artifacts/
+# artifacts/
+# Large training data and intermediate artifacts
+# Exclude large training data and intermediate files
+artifacts/*.csv
+artifacts/train_data.pkl
+artifacts/test_data.pkl
+
+# Keep model artifacts required for Docker inference
+!artifacts/feature_schema.pkl
+!artifacts/preprocessor.pkl
+!artifacts/models/
+!artifacts/models/*.pkl
+
+# Raw datasets
 notebook/data/raw/*.csv
 # Byte-compiled / optimized / DLL files
 __pycache__/
