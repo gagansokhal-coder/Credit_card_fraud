@@ -1559,7 +1559,7 @@
                         <label for="TX_ID">Transaction ID</label>
                         <div class="input-wrap">
                             <input id="TX_ID"
-                                   value="TEST_TX_001"
+                                   placeholder="e.g. TX_20231015_001"
                                    required>
                         </div>
                     </div>
@@ -1568,6 +1568,7 @@
                         <label for="TX_TYPE">Transaction Type</label>
                         <div class="input-wrap">
                             <select id="TX_TYPE" required>
+                                <option value="" disabled selected>Select type...</option>
                                 <option value="TRANSFER">TRANSFER</option>
                             </select>
                         </div>
@@ -1580,7 +1581,7 @@
                                    type="number"
                                    min="0.01"
                                    step="any"
-                                   value="5000"
+                                   placeholder="e.g. 5000"
                                    required>
                         </div>
                     </div>
@@ -1591,7 +1592,7 @@
                             <input id="TIMESTAMP"
                                    type="number"
                                    step="any"
-                                   value="200"
+                                   placeholder="e.g. 200"
                                    required>
                         </div>
                     </div>
@@ -1616,7 +1617,7 @@
                         <label for="SENDER_ACCOUNT_ID">Account ID</label>
                         <div class="input-wrap">
                             <input id="SENDER_ACCOUNT_ID"
-                                   value="ACC_0001"
+                                   placeholder="e.g. ACC_0001"
                                    required>
                         </div>
                     </div>
@@ -1625,7 +1626,7 @@
                         <label for="SENDER_CUSTOMER_ID">Customer ID</label>
                         <div class="input-wrap">
                             <input id="SENDER_CUSTOMER_ID"
-                                   value="CUST_0001"
+                                   placeholder="e.g. CUST_0001"
                                    required>
                         </div>
                     </div>
@@ -1634,7 +1635,7 @@
                         <label for="SENDER_COUNTRY">Country</label>
                         <div class="input-wrap">
                             <input id="SENDER_COUNTRY"
-                                   value="IND"
+                                   placeholder="e.g. US"
                                    required>
                         </div>
                     </div>
@@ -1643,7 +1644,8 @@
                         <label for="SENDER_ACCOUNT_TYPE">Account Type</label>
                         <div class="input-wrap">
                             <select id="SENDER_ACCOUNT_TYPE" required>
-                                <option value="SAVINGS">SAVINGS</option>
+                                <option value="" disabled selected>Select type...</option>
+                                <option value="I">I</option>
                             </select>
                         </div>
                     </div>
@@ -1655,7 +1657,7 @@
                                    type="number"
                                    min="0"
                                    step="any"
-                                   value="50000"
+                                   placeholder="e.g. 50000"
                                    required>
                         </div>
                     </div>
@@ -1666,7 +1668,7 @@
                             <input id="SENDER_TX_BEHAVIOR_ID"
                                    type="number"
                                    step="1"
-                                   value="1"
+                                   placeholder="e.g. 1"
                                    required>
                         </div>
                     </div>
@@ -1691,7 +1693,7 @@
                         <label for="RECEIVER_ACCOUNT_ID">Account ID</label>
                         <div class="input-wrap">
                             <input id="RECEIVER_ACCOUNT_ID"
-                                   value="ACC_0002"
+                                   placeholder="e.g. ACC_0002"
                                    required>
                         </div>
                     </div>
@@ -1700,7 +1702,7 @@
                         <label for="RECEIVER_CUSTOMER_ID">Customer ID</label>
                         <div class="input-wrap">
                             <input id="RECEIVER_CUSTOMER_ID"
-                                   value="CUST_0002"
+                                   placeholder="e.g. CUST_0002"
                                    required>
                         </div>
                     </div>
@@ -1709,7 +1711,7 @@
                         <label for="RECEIVER_COUNTRY">Country</label>
                         <div class="input-wrap">
                             <input id="RECEIVER_COUNTRY"
-                                   value="IND"
+                                   placeholder="e.g. US"
                                    required>
                         </div>
                     </div>
@@ -1718,7 +1720,8 @@
                         <label for="RECEIVER_ACCOUNT_TYPE">Account Type</label>
                         <div class="input-wrap">
                             <select id="RECEIVER_ACCOUNT_TYPE" required>
-                                <option value="SAVINGS">SAVINGS</option>
+                                <option value="" disabled selected>Select type...</option>
+                                <option value="I">I</option>
                             </select>
                         </div>
                     </div>
@@ -1730,7 +1733,7 @@
                                    type="number"
                                    min="0"
                                    step="any"
-                                   value="30000"
+                                   placeholder="e.g. 30000"
                                    required>
                         </div>
                     </div>
@@ -1741,7 +1744,7 @@
                             <input id="RECEIVER_TX_BEHAVIOR_ID"
                                    type="number"
                                    step="1"
-                                   value="1"
+                                   placeholder="e.g. 1"
                                    required>
                         </div>
                     </div>
