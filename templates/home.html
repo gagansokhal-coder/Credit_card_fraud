@@ -67,6 +67,51 @@
             50% { transform: translateY(-8px); }
             100% { transform: translateY(0px); }
         }
+                /* FLOATING DEVELOPER BADGE */
+        .floating-dev-credit {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 99;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            background: rgba(16, 26, 53, 0.78);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 0 15px rgba(134, 84, 255, 0.25);
+            font-size: 11.5px;
+            color: #c4cce3;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .floating-dev-credit:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 97, 155, 0.5);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4), 0 0 22px rgba(255, 97, 155, 0.35);
+        }
+
+        .floating-dev-pulse {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #ff619b;
+            box-shadow: 0 0 8px #ff619b;
+        }
+
+        .floating-dev-name {
+            color: #ffffff;
+            font-weight: 700;
+            background: linear-gradient(120deg, #ffffff 40%, #ff8ab6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+             background-clip: text;
+        }
+
 
         @keyframes floating-rotate {
             0% { transform: translateY(0px) rotate(1deg); }
@@ -2491,6 +2536,13 @@
         fetchTransactions();
     });
 </script>
+<!-- FLOATING DEVELOPER BADGE -->
+<div class="floating-dev-credit">
+    <span class="floating-dev-pulse"></span>
+    <span>Created by</span>
+    <strong class="floating-dev-name">Gagan Rajput</strong>
+</div>
+
 
 </body>
 </html>
