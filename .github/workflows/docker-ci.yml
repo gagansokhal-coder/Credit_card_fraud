@@ -1,4 +1,4 @@
-name: FraudGuard Docker CI
+name: FraudGuard Docker CI/CD
 
 on:
   push:
@@ -9,9 +9,19 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  AWS_REGION: eu-north-1
+  ECR_REPOSITORY: fraudguard
+  EB_APPLICATION_NAME: Fraud_Guard
+  EB_ENVIRONMENT_NAME: FraudGuard-env
+
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   docker-build-and-test:
-    name: Build and test FraudGuard
+    name: Build and Test FraudGuard
     runs-on: ubuntu-latest
 
     steps:
@@ -43,6 +53,7 @@ jobs:
         run: |
           for i in $(seq 1 30); do
             if curl --fail http://127.0.0.1:8000/health; then
+              echo "FraudGuard is healthy."
               exit 0
             fi
 
@@ -64,3 +75,124 @@ jobs:
       - name: Stop and remove container
         if: always()
         run: docker rm -f fraudguard-api || true
+
+  deploy:
+    name: Push to ECR and Deploy to Elastic Beanstalk
+    runs-on: ubuntu-latest
+
+    needs: docker-build-and-test
+
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::286879406932:role/GitHubActions-FraudGuard-Deploy
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+
+          docker build -t "$IMAGE_URI" .
+          docker push "$IMAGE_URI"
+
+          echo "IMAGE_URI=$IMAGE_URI" >> "$GITHUB_ENV"
+
+      - name: Generate Elastic Beanstalk deployment bundle
+        run: |
+          set -euo pipefail
+
+          cat > Dockerrun.aws.json <<EOF
+          {
+            "AWSEBDockerrunVersion": "1",
+            "Image": {
+              "Name": "${IMAGE_URI}",
+              "Update": "true"
+            },
+            "Ports": [
+              {
+                "ContainerPort": 8000,
+                "HostPort": 8000
+              }
+            ]
+          }
+          EOF
+
+          zip -j fraudguard-deployment.zip Dockerrun.aws.json
+
+      - name: Upload deployment bundle to S3
+        id: upload-bundle
+        run: |
+          set -euo pipefail
+
+          BUCKET=$(aws elasticbeanstalk create-storage-location \
+            --region "$AWS_REGION" \
+            --query 'S3Bucket' \
+            --output text)
+
+          if [ -z "$BUCKET" ] || [ "$BUCKET" = "None" ]; then
+            echo "Unable to obtain the Elastic Beanstalk S3 bucket."
+            exit 1
+          fi
+
+          VERSION_LABEL="fraudguard-${GITHUB_SHA}-${GITHUB_RUN_ID}"
+          S3_KEY="fraudguard/${VERSION_LABEL}.zip"
+
+          aws s3 cp fraudguard-deployment.zip \
+            "s3://${BUCKET}/${S3_KEY}" \
+            --region "$AWS_REGION"
+
+          echo "BUCKET=$BUCKET" >> "$GITHUB_ENV"
+          echo "S3_KEY=$S3_KEY" >> "$GITHUB_ENV"
+          echo "VERSION_LABEL=$VERSION_LABEL" >> "$GITHUB_ENV"
+
+      - name: Create Elastic Beanstalk application version
+        run: |
+          set -euo pipefail
+
+          aws elasticbeanstalk create-application-version \
+            --application-name "$EB_APPLICATION_NAME" \
+            --version-label "$VERSION_LABEL" \
+            --description "FraudGuard deployment ${GITHUB_SHA}" \
+            --source-bundle \
+              S3Bucket="$BUCKET",S3Key="$S3_KEY" \
+            --process \
+            --region "$AWS_REGION"
+
+      - name: Deploy to Elastic Beanstalk
+        run: |
+          set -euo pipefail
+
+          aws elasticbeanstalk update-environment \
+            --application-name "$EB_APPLICATION_NAME" \
+            --environment-name "$EB_ENVIRONMENT_NAME" \
+            --version-label "$VERSION_LABEL" \
+            --region "$AWS_REGION"
+
+      - name: Wait for deployment to finish
+        run: |
+          set -euo pipefail
+
+          aws elasticbeanstalk wait environment-updated \
+            --environment-name "$EB_ENVIRONMENT_NAME" \
+            --region "$AWS_REGION"
+
+          aws elasticbeanstalk describe-environments \
+            --environment-names "$EB_ENVIRONMENT_NAME" \
+            --region "$AWS_REGION" \
+            --query 'Environments[0].[Status,Health,VersionLabel]' \
+            --output table
