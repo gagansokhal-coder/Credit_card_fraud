@@ -43,10 +43,15 @@ jobs:
         run: docker image inspect fraudguard:ci
 
       - name: Start FraudGuard container
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
           docker run -d \
             --name fraudguard-api \
             -p 8000:8000 \
+            -e SUPABASE_URL \
+            -e SUPABASE_KEY \
             fraudguard:ci
 
       - name: Wait for application startup
