@@ -10,8 +10,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  docker-build:
-    name: Build and verify Docker image
+  docker-build-and-test:
+    name: Build and test FraudGuard
     runs-on: ubuntu-latest
 
     steps:
@@ -29,5 +29,38 @@ jobs:
           tags: fraudguard:ci
           load: true
 
-      - name: Check Docker image
+      - name: Verify Docker image
         run: docker image inspect fraudguard:ci
+
+      - name: Start FraudGuard container
+        run: |
+          docker run -d \
+            --name fraudguard-api \
+            -p 8000:8000 \
+            fraudguard:ci
+
+      - name: Wait for application startup
+        run: |
+          for i in $(seq 1 30); do
+            if curl --fail http://127.0.0.1:8000/health; then
+              exit 0
+            fi
+
+            echo "Waiting for FraudGuard API..."
+            sleep 2
+          done
+
+          echo "FraudGuard failed to become healthy."
+          docker logs fraudguard-api
+          exit 1
+
+      - name: Check API documentation
+        run: curl --fail http://127.0.0.1:8000/docs
+
+      - name: Display container logs
+        if: always()
+        run: docker logs fraudguard-api || true
+
+      - name: Stop and remove container
+        if: always()
+        run: docker rm -f fraudguard-api || true
